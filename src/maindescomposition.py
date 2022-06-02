@@ -138,7 +138,7 @@ for i in range(20):
 #df with the feasible solutions
 df_iterations = pd.DataFrame(rows_df, columns=["i", "feasible", "area", "LCOE_actual", "LCOE_Best"])
 
-
+a = 1
 
 '''
 # solve model 
