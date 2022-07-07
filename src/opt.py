@@ -54,7 +54,7 @@ def make_model(generators_dict=None,
     model.RENEWABLES = pyo.Set(initialize=[r for r in renewables_dict.keys()])
     model.TEC_BRAND = pyo.Set( initialize = [(i,j) for i in technologies_dict.keys() for j in technologies_dict[i]], ordered = False) #Indexed set - technologies / brands
     model.HTIME = pyo.Set(initialize=[t for t in range(len(demand_df))])
-
+    model.DIESELSET = pyo.Set(initialize=[k for k in generators_dict.keys() if generators_dict[k].tec == 'D'])
     # Parameters
     model.amax = pyo.Param(initialize=amax) #Maximum area
     model.fuel_cost = pyo.Param(initialize=fuel_cost) #Fuel Cost
@@ -78,7 +78,7 @@ def make_model(generators_dict=None,
     model.x = pyo.Var(model.TEC_BRAND, within=pyo.Binary) #select or not the brand
     model.w = pyo.Var(model.GENERATORS, within=pyo.Binary) #select or not the generator
     model.q = pyo.Var(model.BATTERIES, within=pyo.Binary) #select or not the battery
-    model.v = pyo.Var(model.GENERATORS, model.HTIME, within=pyo.Binary) #select or not the generator in each period
+    model.dg = pyo.Var (model.DIESELSET, model.HTIME, within = pyo.Binary) #Activate or not a Diesel Generator
     model.p = pyo.Var(model.GENERATORS, model.HTIME, within=pyo.NonNegativeReals) #Power generated
     model.soc = pyo.Var(model.BATTERIES, model.HTIME, within=pyo.NonNegativeReals) #State of charge of the battery
     model.b_charge = pyo.Var(model.BATTERIES, model.HTIME, within=pyo.NonNegativeReals) #Network power to charge the battery
@@ -106,6 +106,12 @@ def make_model(generators_dict=None,
             return pyo.Constraint.Skip
     model.wk_rule = pyo.Constraint(model.TEC_BRAND, model.GENERATORS, rule=wk_rule)
 
+    # Defines rule to activate or deactivate generators for each period of time
+    def gener_rule(model,k,t):
+        return model.p[k,t]*0.0000001 <= model.w[k]
+    model.gener_rule = pyo.Constraint(model.GENERATORS, model.HTIME, rule=gener_rule)
+
+
     #Defines rule of brands and batteries
     def ql_rule(model, i, j, l):
         bat = batteries_dict[l]
@@ -120,25 +126,20 @@ def make_model(generators_dict=None,
       return  sum(model.gen_area[k]*model.w[k] for k in model.GENERATORS) + sum(model.bat_area[l]*model.q[l] for l in model.BATTERIES) <= model.amax
     model.area_rule = pyo.Constraint(rule=area_rule)
 
-    # Defines rule to activate or deactivate generators for each period of time
-    def vkt_rule(model,k,t):
-        return model.v[k,t] <= model.w[k]
-    model.vkt_rule = pyo.Constraint(model.GENERATORS, model.HTIME, rule=vkt_rule)
-
     # Generation rule    
     def G_rule (model, k, t):
       gen = generators_dict[k]
       if gen.tec == 'D':
-          return model.p[k,t] <= gen.DG_max * model.v[k,t]
+          return model.p[k,t] <= gen.DG_max * model.dg[k,t]
       else:
-          return model.p[k,t] == gen.gen_rule[t] * model.v[k,t]
+          return model.p[k,t] == gen.gen_rule[t] * model.w[k]
     model.G_rule = pyo.Constraint(model.GENERATORS, model.HTIME, rule=G_rule)
     
     # Minimum Diesel  
     def G_mindiesel (model, k, t):
       gen = generators_dict[k]
       if gen.tec == 'D':
-          return model.p[k,t] >= gen.DG_min * model.v[k,t]
+          return model.p[k,t] >= gen.DG_min * model.dg[k,t]
       else:
           return pyo.Constraint.Skip
     model.G_mindiesel = pyo.Constraint(model.GENERATORS, model.HTIME, rule=G_mindiesel)
@@ -233,7 +234,7 @@ def make_model(generators_dict=None,
     def dieselsolar_rule(model,k,t):
         gen = generators_dict[k]
         if gen.tec == 'S':
-            return sum( model.v[k1,t] for k1 in model.GENERATORS if generators_dict[k1].tec == 'D') >= model.v[k,t]
+            return sum( model.dg[k1,t] for k1 in model.GENERATORS if generators_dict[k1].tec == 'D') >= model.p[k,t]*0.000001
         else:
             return pyo.Constraint.Skip
     #model.dieselsolar_rule = pyo.Constraint(model.GENERATORS, model.HTIME, rule=dieselsolar_rule)
@@ -246,7 +247,12 @@ def make_model(generators_dict=None,
             return   sum(model.q[l] for l in model.BATTERIES) >= model.y[i]
     model.wqy_rule = pyo.Constraint(model.TECHNOLOGIES, rule=wqy_rule)
 
-
+    def wxq_rule(model, i, j):
+        if i != 'B':
+            return sum(model.w[k] for k in model.GENERATORS if generators_dict[k].tec == i and generators_dict[k].br == j) >= model.x[i,j] 
+        else:
+            return   pyo.Constraint.Skip
+    #model.wxq_rule = pyo.Constraint(model.TEC_BRAND, rule=wxq_rule)
 
     #Objective function
         
@@ -334,6 +340,8 @@ def make_model_operational(generators_dict=None,
     model.RENEWABLES = pyo.Set(initialize=[r for r in renewables_dict.keys()])
     model.TEC_BRAND = pyo.Set( initialize = [(i,j) for i in technologies_dict.keys() for j in technologies_dict[i]], ordered = False) #Index set - technologies / brand
     model.HTIME = pyo.Set(initialize=[t for t in range(len(demand_df))])
+    model.DIESELSET = pyo.Set(initialize=[k for k in generators_dict.keys() if generators_dict[k].tec == 'D'])
+
 
     # Parameters 
     model.d = pyo.Param(model.HTIME, initialize = demand_df) #demand     
@@ -346,7 +354,7 @@ def make_model_operational(generators_dict=None,
     model.w_cost = pyo.Param (initialize = w_cost)
 
     # Variables
-    model.v = pyo.Var(model.GENERATORS, model.HTIME, within=pyo.Binary) #select or not the generator in each period
+    model.dg = pyo.Var (model.DIESELSET, model.HTIME, within = pyo.Binary) #Activate or not a Diesel Generator
     model.p = pyo.Var(model.GENERATORS, model.HTIME, within=pyo.NonNegativeReals) #Power generated
     model.soc = pyo.Var(model.BATTERIES, model.HTIME, within=pyo.NonNegativeReals) #State of charge of the battery
     model.b_charge = pyo.Var(model.BATTERIES, model.HTIME, within=pyo.NonNegativeReals) #Network power to charge the battery
@@ -363,16 +371,16 @@ def make_model_operational(generators_dict=None,
     def G_rule (model, k, t):
       gen = generators_dict[k]
       if gen.tec == 'D':
-          return model.p[k,t] <= gen.DG_max * model.v[k,t]
+          return model.p[k,t] <= gen.DG_max 
       else:
-          return model.p[k,t] == gen.gen_rule[t] * model.v[k,t]
+          return model.p[k,t] == gen.gen_rule[t] 
     model.G_rule = pyo.Constraint(model.GENERATORS, model.HTIME, rule=G_rule)
     
     # Minimum Diesel  
     def G_mindiesel (model, k, t):
       gen = generators_dict[k]
       if gen.tec == 'D':
-          return model.p[k,t] >= gen.DG_min * model.v[k,t]
+          return model.p[k,t] >= gen.DG_min * model.dg[k,t]
       else:
           return pyo.Constraint.Skip
     model.G_mindiesel = pyo.Constraint(model.GENERATORS, model.HTIME, rule=G_mindiesel)
@@ -448,12 +456,11 @@ def make_model_operational(generators_dict=None,
     model.bcbd_rule = pyo.Constraint(model.BATTERIES, model.HTIME, rule=bcbd_rule)
    
 
-    
-    # Defines rule relation Solar - Diesel
+     # Defines rule relation Solar - Diesel
     def dieselsolar_rule(model,k,t):
         gen = generators_dict[k]
         if gen.tec == 'S':
-            return sum( model.v[k1,t] for k1 in model.GENERATORS if generators_dict[k1].tec == 'D') >= model.v[k,t]
+            return sum( model.dg[k1,t] for k1 in model.GENERATORS if generators_dict[k1].tec == 'D') >= model.p[k,t]*0.000001
         else:
             return pyo.Constraint.Skip
     #model.dieselsolar_rule = pyo.Constraint(model.GENERATORS, model.HTIME, rule=dieselsolar_rule)
@@ -666,7 +673,7 @@ class Results():
             if value==1:
                 column_name = key+'_b+'
                 self.df_results['b+'] += self.df_results[column_name]
-        #self.df_results['Battery1_b+']+self.df_results['Battery2_b+']
+        self.df_results['Battery1_b+']+self.df_results['Battery2_b+']
         plot.add_trace(go.Bar(x=self.df_results.index, y=self.df_results['b+'],
                               base=-1*self.df_results['b+'],
                               marker_color='grey',
