@@ -6,13 +6,14 @@ Created on Wed Apr 20 11:14:21 2022
 """
 
 from utilities import read_data, create_objects, calculate_sizingcost, create_technologies, calculate_area, calculate_energy, interest_rate
-from utilities import fiscal_incentive 
+from utilities import fiscal_incentive
 import opt as opt
 import pandas as pd 
 from operators import Sol_constructor, Search_operator
 from plotly.offline import plot
 import copy
 import time
+import numpy as np
 pd.options.display.max_columns = None
 
 # file paths github
@@ -71,6 +72,8 @@ CRF = (ir * (1 + ir)**(instance_data['years']))/((1 + ir)**(instance_data['years
 MIP_GAP = 0.01
 TEE_SOLVER = True
 OPT_SOLVER = 'gurobi'
+SEED_R = 42
+np.random.seed(SEED_R)
 
 #Calculate fiscal incentives
 delta = fiscal_incentive(fisc_data['credit'], 
@@ -145,7 +148,7 @@ dict_time_make = {}
 dict_time_solve = {}
 time_i_iterations = time.time()
 
-for i in range(0):
+for i in range(1):
         
     time_i_range = time.time()
     rows_df.append([i, sol_current.feasible, 
@@ -271,7 +274,9 @@ dfs = [df_times, df_time_iter, df_time_solve, df_time_make, df_time_remove, df_t
 # run function
 multiple_dfs(dfs, 'ExecTime', 'e128_jsonwb50__p.xlsx')
 
-
+def init_rng(seed):
+    global rng
+    rng = numpy.random.RandomState(seed=seed)
 
   
 
