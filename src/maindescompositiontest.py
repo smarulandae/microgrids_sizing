@@ -685,16 +685,15 @@ for iii in range(1, 130):
     
     
     name_esc = 'esc' + str(iii)
-    rows_df_time.append(iii,name_esc, lugar_run, iteraciones_run, amax, tlpsp_run, nse_run, 
+    rows_df_time.append([iii,name_esc, lugar_run, iteraciones_run, amax, tlpsp_run, nse_run, 
                         aux_instance_data['w_cost'],len(demand_df),demanda_run, forecast_w_run,forecast_s_run,
                         gap_run, add_function_run, len(default_batteries), len(default_diesel),
                         len(default_solar),len(default_wind), bypass_constraint_run,b_p_run, d_p_run, s_p_run,
                         w_p_run, time_f_total, time_f_create_data,time_f_firstsol, time_f_iterations,
                         time_iter_average, time_solve_average, time_make_average, time_remove_average,
-                        time_add_average, time_f_results)    
+                        time_add_average, time_f_results])    
 
-    
-     
+
 
 df_time = pd.DataFrame(rows_df_time, columns=["N", "Name", "City", "Iterations", "Area","Tlpsp",
                                               "NSE", "W_cost", "Len_demand","Forecast_wind", "Forecast_wind",
@@ -709,9 +708,9 @@ df_time = pd.DataFrame(rows_df_time, columns=["N", "Name", "City", "Iterations",
                             
 def multiple_dfs(df_list, sheets, file_name):
     writer = pd.ExcelWriter(file_name,engine='xlsxwriter')   
-    row = 5
+    row = 0
     for dataframe in df_list:
-        dataframe.to_excel(writer,sheet_name=sheets,startrow=row , startcol=5)   
+        dataframe.to_excel(writer,sheet_name=sheets,startrow=row , startcol=0)   
         row = row + 1
     writer.save()
 
@@ -719,7 +718,13 @@ def multiple_dfs(df_list, sheets, file_name):
 dfs = [df_time]
 
 # run function
-multiple_dfs(dfs, 'ExecTime', 'e128_jsonwb50__p.xlsx')
+multiple_dfs(dfs, 'ExecTime', 'Total_instances.xlsx')
+
+
+
+
+
+
     
     
     
