@@ -6,9 +6,9 @@ Created on Wed Apr 20 11:14:21 2022
 """
 from utilities import read_data, create_objects, calculate_sizingcost, create_technologies, calculate_area, calculate_energy, interest_rate
 from utilities import fiscal_incentive
-import opt as opt
+import opttest as opt
 import pandas as pd 
-from operators import Sol_constructor, Search_operator
+from operators_test import Sol_constructor, Search_operator
 from plotly.offline import plot
 import copy
 import time
@@ -52,15 +52,15 @@ fiscalData_filepath = "../data/fiscal_incentive.json"
 
 rows_df_time = []
 
-for iii in range(1, 130):
+for iii in range(1, 137):
     #PARAMETROS DE LA CORRIDA - POR DEFECTO
     lugar_run  = "Providencia"
     iteraciones_run = 30
     area_run = 1
-    d_p_run = 1
-    s_p_run = 1
-    w_p_run = 1
-    b_p_run = 1
+    d_p_run = 0.25
+    s_p_run = 0.25
+    w_p_run = 0.25
+    b_p_run = 0.25
     tlpsp_run = 1
     nse_run = 0.05
     w_cost_run = 1
@@ -69,7 +69,7 @@ for iii in range(1, 130):
     forecast_w_run = 1
     forecast_s_run = 1
     gap_run = 0.01
-    bypass_constraint_run = "None"
+    list_bypass_constraint_run = ['dieselsolar']
     add_function_run = "Grasp"
     json_baterias_run = 1
     json_diesel_run = 1
@@ -82,6 +82,8 @@ for iii in range(1, 130):
     estado_json_s = "Igual"    
     estado_json_w = "Igual"
     estado_json_b = "Igual"
+    add_name = ""
+    
     
     #INSTANCIAS
     instances_l = [1,9,10,11,12,85,86,87,88,89,90,91]
@@ -93,7 +95,7 @@ for iii in range(1, 130):
         lugar_run = "Puerto Nariño"
     elif (iii  in instances_sa):
         lugar_run = "San Andrés"
-
+ 
     instances_iterations_40 = [5,6,7,8,9,10,11,12,13,14,15,16,17,41,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102]
     instances_iterations_50 = [1,2,3,4,42]
     
@@ -117,88 +119,169 @@ for iii in range(1, 130):
         iteraciones_run = 90        
     elif (iii == 47):
         iteraciones_run = 100        
-    
+
+
+    if (iii == 92):
+        list_bypass_constraint_run = ['None']
+        add_name = 'AllConstraints'
+    elif (iii == 94):
+        list_bypass_constraint_run = ['balance']
+        add_name = 'NOTbalance'
+    elif (iii == 95):
+        list_bypass_constraint_run = ['G_mindiesel']
+        add_name = 'NOTmindiesel'
+    elif (iii == 96):
+        list_bypass_constraint_run = ['Bconstraint3','Bconstraint4']
+        add_name = 'NOTb34'
+    elif (iii == 97):
+        list_bypass_constraint_run = ['Bconstraint5','Bconstraint6']
+        add_name = 'NOTb56'
+    elif (iii == 98):
+        list_bypass_constraint_run = ['bcbd']
+        add_name = 'NOTbcbd'
+    elif (iii == 99 or iii == 100):
+        list_bypass_constraint_run = ['other']
+        add_name = 'NOTotherrule'
+    elif (iii == 102):
+        list_bypass_constraint_run = ['lpspcons']
+        add_name = 'NOTlpsp'
+
+        
+        
+        
+        
+    bypass_constraint_run = ', '.join([str(item) for item in list_bypass_constraint_run])
+
+
+    if(iii == 5 or iii == 9):
+        b_p_run == 0.5
+        add_name = '50%bat'
+    elif(iii == 6 or iii == 10):
+        d_p_run == 0.5
+        add_name = '50%diesel'
+    elif(iii == 7 or iii == 11):
+        w_p_run == 0.5
+        add_name = '50%wind'
+    elif(iii == 8 or iii == 12):
+        s_p_run == 0.5
+        add_name = '50%solar'
+
+        
     if (iii == 13):
         tlpsp_run = 2
+        add_name = '2tlpsp'
     elif (iii == 14):
         tlpsp_run = 3
+        add_name = '3tlpsp'
     elif (iii == 15):
         tlpsp_run = 7
+        add_name = '7tlpsp'
     elif (iii == 16):
         tlpsp_run = 24
+        add_name = '24tlpsp'
     elif (iii == 17):
         tlpsp_run = 100
+        add_name = '100tlpsp'
     
     if (iii == 18):
         area_run = 0.8
+        add_name = '80%area'
     elif (iii == 19):
         area_run = 0.9
+        add_name = '90%area'
     elif (iii == 20):
         area_run = 1.1
+        add_name = '110%area'
     elif (iii == 21):
         area_run = 1.2
+        add_name = '120%area'
     elif (iii == 22):
         area_run = 1.3
+        add_name = '130%area'
     
     if (iii == 33):
         w_cost_run = 0.5
+        add_name = '50%wcost'
     elif (iii == 34):
-        w_cost_run = 0.9        
+        w_cost_run = 0.9    
+        add_name = '90%wcost'
     elif (iii == 36):
-        w_cost_run = 1.1        
+        w_cost_run = 1.1    
+        add_name = '110%wcost'
     elif (iii == 37):
         w_cost_run = 1.5
+        add_name = '150%wcost'
     
     if (iii == 48 or iii == 53):
         demand_run = 0.5
+        add_name = '50%demand'
     elif (iii == 49 or iii == 54):
         demand_run = 0.9  
+        add_name = '90%demand'
     elif (iii == 51 or iii == 56):
         demand_run = 1.1 
+        add_name = '110%demand'
     elif (iii == 52):
         demand_run = 1.3
+        add_name = '130%demand'
     elif (iii == 57):
         demand_run = 1.5
+        add_name = '150%demand'
 
     if (iii == 58 or iii == 63):
         forecast_w_run = 0.5
+        add_name = '50%wt'
     elif (iii == 59 or iii == 64):
         forecast_w_run = 0.9
+        add_name = '90%wt'
     elif (iii == 61 or iii == 66):
-        forecast_w_run = 1.1    
+        forecast_w_run = 1.1
+        add_name = '110%wt'
     elif (iii == 62 or iii == 67):
         forecast_w_run = 1.5
-
+        add_name = '150%wt'
+        
     if (iii == 68 or iii == 73):
         forecast_s_run = 0.5
+        add_name = '50%DNI'
     elif (iii == 69 or iii == 74):
         forecast_s_run = 0.9
+        add_name = '90%DNI'
     elif (iii == 71 or iii == 76):
-        forecast_s_run = 1.1    
+        forecast_s_run = 1.1
+        add_name = '110%DNI'
     elif (iii == 72 or iii == 77):
         forecast_s_run = 1.5
-
+        add_name = '150%DNI'
 
     if (iii == 78 or iii == 85):
         gap_run == 0.001
+        add_name = '0.1%GAP'
     elif (iii == 79 or iii == 86):
         gap_run == 0.005
+        add_name = '0.5%GAP'
     elif (iii == 80 or iii == 87):
         gap_run == 0.02
+        add_name = '2%GAP'
     elif (iii == 81 or iii == 88):
         gap_run == 0.03
+        add_name = '3%GAP'
     elif (iii == 82 or iii == 89):
-        gap_run == 0.1
+        gap_run == 0.05
+        add_name = '5%GAP'
     elif (iii == 83 or iii == 90):
         gap_run == 0.1
+        add_name = '10%GAP'
     elif (iii == 84 or iii == 91):
         gap_run == 0
+        add_name = '0%GAP'
 
     if (iii == 105 or iii == 106):
         add_function_run = "random"
-     
+        add_name = 'Random'
         
     if (iii == 107):
+        add_name = '50%json'
         json_baterias_run = 0.5
         estado_json_b = "Baja"
         json_diesel_run = 0.5
@@ -208,6 +291,7 @@ for iii in range(1, 130):
         json_wind_run = 0.5
         estado_json_w = "Baja"        
     elif (iii == 108):
+        add_name = '80%json'
         json_baterias_run = 0.8
         estado_json_b = "Baja"
         json_diesel_run = 0.8
@@ -217,6 +301,7 @@ for iii in range(1, 130):
         json_wind_run = 0.8
         estado_json_w = "Baja"             
     elif (iii == 110):
+        add_name = '120%json'
         json_baterias_run = 1.2
         estado_json_b = "Sube"
         json_diesel_run = 1.2
@@ -226,6 +311,7 @@ for iii in range(1, 130):
         json_wind_run = 1.2
         estado_json_w = "Sube"         
     elif (iii == 111):
+        add_name = '150%json'
         json_baterias_run = 1.5
         estado_json_b = "Sube"
         json_diesel_run = 1.5
@@ -235,65 +321,85 @@ for iii in range(1, 130):
         json_wind_run = 1.5
         estado_json_w = "Sube"     
     elif (iii == 112):
+        add_name = '150%jsonb'
         json_baterias_run = 1.5
         estado_json_b = "Sube"
     elif (iii == 113):
+        add_name = '120%jsonb'
         json_baterias_run = 1.2
         estado_json_b = "Sube" 
     elif (iii == 115):
+        add_name = '80%jsonb'
         json_baterias_run = 0.8
         estado_json_b = "Baja"
     elif (iii == 116):
+        add_name = '50%jsonb'
         json_baterias_run = 0.5
         estado_json_b = "Baja"
     elif (iii == 117):
+        add_name = '150%jsond'
         json_diesel_run = 1.5
         estado_json_d = "Sube"
     elif (iii == 118):
+        add_name = '120%jsond'
         json_diesel_run = 1.2
         estado_json_d = "Sube" 
     elif (iii == 120):
+        add_name = '80%jsond'
         json_diesel_run = 0.8
         estado_json_d = "Baja"
     elif (iii == 121):
+        add_name = '50%jsond'
         json_diesel_run = 0.5
         estado_json_d = "Baja"        
     elif (iii == 122):
+        add_name = '150%jsons'
         json_solar_run = 1.5
         estado_json_s = "Sube"
     elif (iii == 123):
+        add_name = '120%jsons'
         json_solar_run = 1.2
         estado_json_s = "Sube" 
     elif (iii == 125):
+        add_name = '80%jsons'
         json_solar_run = 0.8
         estado_json_s = "Baja"
     elif (iii == 126):
+        add_name = '50%jsons'
         json_solar_run = 0.5
         estado_json_s = "Baja"      
     elif (iii == 127):
+        add_name = '150%jsonw'
         json_wind_run = 1.5
         estado_json_w = "Sube"
     elif (iii == 128):
+        add_name = '120%jsonw'
         json_wind_run = 1.2
         estado_json_w = "Sube" 
     elif (iii == 130):
+        add_name = '80%jsonw'
         json_wind_run = 0.8
         estado_json_w = "Baja"
     elif (iii == 131):
+        add_name = '50%jsonw'
         json_wind_run = 0.5
         estado_json_w = "Baja"  
 
         
     if (iii == 132):
         aumento_tiempo = "True"
+        add_name = '150%htime'
         htime_run = 1.5
     elif (iii == 133):
         aumento_tiempo = "True"
         htime_run = 1.2
-    elif (iii == 134):
-        htime_run = 0.8
+        add_name = '120%htime'
     elif (iii == 135):
+        htime_run = 0.8
+        add_name = '80%htime'
+    elif (iii == 136):
         htime_run = 0.5
+        add_name = '50%htime'
         
     
         
@@ -455,23 +561,33 @@ for iii in range(1, 130):
     
     if (iii == 23):
         nse_run = 0.001
+        add_name = '0.1%nse'
     elif (iii == 24):
         nse_run = 0.01
+        add_name = '1%nse'
     elif (iii == 25):
         nse_run = 0.02
+        add_name = '2%nse'
     elif (iii == 26):
+        add_name = '3%nse'
         nse_run = 0.03
     elif (iii == 27):
+        add_name = '5%nse'
         nse_run = 0.05
     elif (iii == 28):
+        add_name = '8%nse'
         nse_run = 0.08
     elif (iii == 29):
+        add_name = '10%nse'
         nse_run = 0.1
     elif (iii == 30):
+        add_name = '15%nse'
         nse_run = 0.15
     elif (iii == 31):
+        add_name = '20%nse'
         nse_run = 0.2
     elif (iii == 32):
+        add_name = '30%nse'
         nse_run = 0.3
 
                       
@@ -537,7 +653,8 @@ for iii in range(1, 130):
                                                    delta,
                                                    OPT_SOLVER,
                                                    MIP_GAP,
-                                                   TEE_SOLVER)
+                                                   TEE_SOLVER,
+                                                   list_bypass_constraint_run)
     
     
     time_f_firstsol = time.time() - time_i_firstsol #final time
@@ -570,128 +687,143 @@ for iii in range(1, 130):
     dict_time_solve = {}
     time_i_iterations = time.time()
     
-    for i in range(int(iteraciones_run)):
-            
-        time_i_range = time.time()
-        rows_df.append([i, sol_current.feasible, 
-                        sol_current.results.descriptive['area'], 
-                        sol_current.results.descriptive['LCOE'], 
-                        sol_best.results.descriptive['LCOE'], movement])
-        if sol_current.feasible == True:     
-            # save copy as the last solution feasible seen
-            sol_feasible = copy.deepcopy(sol_current) 
-            # Remove a generator or battery from the current solution
-            time_i_remove = time.time()
-            sol_try, dic_remove = search_operator.removeobject(sol_current, CRF)
-            time_f_remove = time.time() - time_i_remove #final time
-            dict_time_remove[i] = time_f_remove
-            movement = "Remove"
-        else:
-            #  Create list of generators that could be added
-            list_available_bat, list_available_gen, list_tec_gen  = search_operator.available(sol_current, amax)
-            if (list_available_gen != [] or list_available_bat != []):
-                # Add a generator or battery to the current solution
-                time_i_add = time.time()
-                if (add_function_run == "random"):
-                    sol_try = search_operator.addrandomobject(sol_current, list_available_bat, list_available_gen, list_tec_gen)
-                else:
-                    sol_try, dic_remove = search_operator.addobject(sol_current, list_available_bat, list_available_gen, list_tec_gen, dic_remove,  CRF, instance_data['fuel_cost'])
-    
-                movement = "Add"
-                time_f_add = time.time() - time_i_add #final time
-                dict_time_add[i] = time_f_add
+    if (sol_feasible.results != None):
+        for i in range(int(iteraciones_run)):
+                
+            time_i_range = time.time()
+            rows_df.append([i, sol_current.feasible, 
+                            sol_current.results.descriptive['area'], 
+                            sol_current.results.descriptive['LCOE'], 
+                            sol_best.results.descriptive['LCOE'], movement])
+            if sol_current.feasible == True:     
+                # save copy as the last solution feasible seen
+                sol_feasible = copy.deepcopy(sol_current) 
+                # Remove a generator or battery from the current solution
+                time_i_remove = time.time()
+                sol_try, dic_remove = search_operator.removeobject(sol_current, CRF)
+                time_f_remove = time.time() - time_i_remove #final time
+                dict_time_remove[i] = time_f_remove
+                movement = "Remove"
             else:
-                # return to the last feasible solution
-                sol_current = copy.deepcopy(sol_feasible)
-                continue # Skip running the model and go to the begining of the for loop
+                #  Create list of generators that could be added
+                list_available_bat, list_available_gen, list_tec_gen  = search_operator.available(sol_current, amax)
+                if (list_available_gen != [] or list_available_bat != []):
+                    # Add a generator or battery to the current solution
+                    time_i_add = time.time()
+                    if (b_p_run == 0.5 and list_available_bat != []):
+                        list_tec_gen = list_tec_gen + ['B','B']
+                    if((w_p_run == 0.5) and (list_available_gen != []) and ('W' in  list_tec_gen)):
+                       list_tec_gen = list_tec_gen + ['W','W']
+                    if((s_p_run == 0.5) and (list_available_gen != []) and ('S' in  list_tec_gen)):
+                       list_tec_gen = list_tec_gen + ['S','S']
+                    if((d_p_run == 0.5) and (list_available_gen != []) and ('D' in  list_tec_gen)):
+                       list_tec_gen = list_tec_gen + ['D','D']                    
+                        
+                    if (add_function_run == "random"):
+                        sol_try = search_operator.addrandomobject(sol_current, list_available_bat, list_available_gen, list_tec_gen)
+                    else:
+                        sol_try, dic_remove = search_operator.addobject(sol_current, list_available_bat, list_available_gen, list_tec_gen, dic_remove,  CRF, instance_data['fuel_cost'])
         
-        tnpccrf_calc = calculate_sizingcost(sol_try.generators_dict_sol, 
-                                            sol_try.batteries_dict_sol, 
-                                            ir = ir,
-                                            years = instance_data['years'],
-                                            delta = delta)
-        time_i_make = time.time()
-        model = opt.make_model_operational(generators_dict = sol_try.generators_dict_sol,
-                                           batteries_dict = sol_try.batteries_dict_sol,  
-                                           demand_df=dict(zip(demand_df.t, demand_df.demand)), 
-                                           technologies_dict = sol_try.technologies_dict_sol,  
-                                           renewables_dict = sol_try.renewables_dict_sol,
-                                           fuel_cost =  instance_data['fuel_cost'] * fuel_cost_run,
-                                           nse =  nse_run, 
-                                           TNPCCRF = tnpccrf_calc,
-                                           w_cost = instance_data['w_cost'] * w_cost_run,
-                                           tlpsp = tlpsp_run) 
+                    movement = "Add"
+                    time_f_add = time.time() - time_i_add #final time
+                    dict_time_add[i] = time_f_add
+                else:
+                    # return to the last feasible solution
+                    sol_current = copy.deepcopy(sol_feasible)
+                    continue # Skip running the model and go to the begining of the for loop
+            
+            if (sol_try.generators_dict_sol == {} and sol_try.batteries_dict_sol == {}):
+                select_ob = random.choice(list(generators_dict.keys()))
+                sol_try.generators_dict_sol[select_ob] = generators_dict[select_ob]
+                
+            tnpccrf_calc = calculate_sizingcost(sol_try.generators_dict_sol, 
+                                                sol_try.batteries_dict_sol, 
+                                                ir = ir,
+                                                years = instance_data['years'],
+                                                delta = delta)
+            time_i_make = time.time()
+            model = opt.make_model_operational(generators_dict = sol_try.generators_dict_sol,
+                                               batteries_dict = sol_try.batteries_dict_sol,  
+                                               demand_df=dict(zip(demand_df.t, demand_df.demand)), 
+                                               technologies_dict = sol_try.technologies_dict_sol,  
+                                               renewables_dict = sol_try.renewables_dict_sol,
+                                               fuel_cost =  instance_data['fuel_cost'] * fuel_cost_run,
+                                               nse =  nse_run, 
+                                               TNPCCRF = tnpccrf_calc,
+                                               w_cost = instance_data['w_cost'] * w_cost_run,
+                                               tlpsp = tlpsp_run,
+                                               bypass = list_bypass_constraint_run) 
+            
+            time_f_make = time.time() - time_i_make
+            dict_time_make[i] = time_f_make
+            time_i_solve = time.time()
+            results, termination = opt.solve_model(model, 
+                                                   optimizer = OPT_SOLVER,
+                                                   mipgap = MIP_GAP,
+                                                   tee = TEE_SOLVER)
+            time_f_solve = time.time() - time_i_solve
+            dict_time_solve[i] = time_f_solve
         
-        time_f_make = time.time() - time_i_make
-        dict_time_make[i] = time_f_make
-        time_i_solve = time.time()
-        results, termination = opt.solve_model(model, 
-                                               optimizer = OPT_SOLVER,
-                                               mipgap = MIP_GAP,
-                                               tee = TEE_SOLVER)
-        time_f_solve = time.time() - time_i_solve
-        dict_time_solve[i] = time_f_solve
-    
-    
-        if termination['Temination Condition'] == 'optimal':
-            sol_try.results.descriptive['LCOE'] = model.LCOE_value.expr()
-            sol_try.results = opt.Results(model)
-            sol_try.feasible = True
-            sol_current = copy.deepcopy(sol_try)
-            if sol_try.results.descriptive['LCOE'] <= sol_best.results.descriptive['LCOE']:
-                sol_best = copy.deepcopy(sol_try)
-        else:
-            sol_try.feasible = False
-            sol_try.results.descriptive['LCOE'] = None
-            sol_current = copy.deepcopy(sol_try)
-    
-        sol_current.results.descriptive['area'] = calculate_area(sol_current)
         
-        time_f_range = time.time() - time_i_range
-        dict_time_iter[i] = time_f_range    
-        #print(sol_current.generators_dict_sol)
-        #print(sol_current.batteries_dict_sol)
-                   
-    time_f_iterations = time.time() - time_i_iterations #final time
-    #df with the feasible solutions
-    df_iterations = pd.DataFrame(rows_df, columns=["i", "feasible", "area", "LCOE_actual", "LCOE_Best","Movement"])
-    
-    time_i_results = time.time()
-    #print results best solution
-    print(sol_best.results.descriptive)
-    print(sol_best.results.df_results)
-    generation_graph = sol_best.results.generation_graph()
-    plot(generation_graph)
-    try:
-        percent_df, energy_df, renew_df, total_df, brand_df = calculate_energy(sol_best.batteries_dict_sol, sol_best.generators_dict_sol, sol_best.results, demand_df)
-    except KeyError:
-        pass
-    time_f_results = time.time() - time_i_results
-    time_f_total = time.time() - time_i_total #final time
-    
-    
-    
-    
-    df_time_iter = pd.DataFrame(dict_time_iter.items(), columns = ['Iteration', 'Total iteration time']) 
-    time_iter_average = df_time_iter['Total iteration time'].mean()
-    df_time_solve = pd.DataFrame(dict_time_solve.items(), columns = ['Iteration', 'Solver time']) 
-    time_solve_average = df_time_solve['Solver time'].mean()
-    df_time_make = pd.DataFrame(dict_time_make.items(), columns = ['Iteration', 'make model time'])
-    time_make_average = df_time_make['make model time'].mean()
-    df_time_remove = pd.DataFrame(dict_time_remove.items(), columns = ['Iteration', 'Remove function time']) 
-    time_remove_average = df_time_remove['Remove function time'].mean()
-    df_time_add = pd.DataFrame(dict_time_add.items(), columns = ['Iteration', 'Add function time']) 
-    time_add_average = df_time_add['Add function time'].mean()
-    
-    
-    name_esc = 'esc' + str(iii)
-    rows_df_time.append([iii,name_esc, lugar_run, iteraciones_run, amax, tlpsp_run, nse_run, 
-                        aux_instance_data['w_cost'],len(demand_df),demanda_run, forecast_w_run,forecast_s_run,
-                        gap_run, add_function_run, len(default_batteries), len(default_diesel),
-                        len(default_solar),len(default_wind), bypass_constraint_run,b_p_run, d_p_run, s_p_run,
-                        w_p_run, time_f_total, time_f_create_data,time_f_firstsol, time_f_iterations,
-                        time_iter_average, time_solve_average, time_make_average, time_remove_average,
-                        time_add_average, time_f_results])    
+            if termination['Temination Condition'] == 'optimal':
+                sol_try.results.descriptive['LCOE'] = model.LCOE_value.expr()
+                sol_try.results = opt.Results(model)
+                sol_try.feasible = True
+                sol_current = copy.deepcopy(sol_try)
+                if sol_try.results.descriptive['LCOE'] <= sol_best.results.descriptive['LCOE']:
+                    sol_best = copy.deepcopy(sol_try)
+            else:
+                sol_try.feasible = False
+                sol_try.results.descriptive['LCOE'] = None
+                sol_current = copy.deepcopy(sol_try)
+        
+            sol_current.results.descriptive['area'] = calculate_area(sol_current)
+            
+            time_f_range = time.time() - time_i_range
+            dict_time_iter[i] = time_f_range    
+            #print(sol_current.generators_dict_sol)
+            #print(sol_current.batteries_dict_sol)
+                       
+        time_f_iterations = time.time() - time_i_iterations #final time
+        #df with the feasible solutions
+        df_iterations = pd.DataFrame(rows_df, columns=["i", "feasible", "area", "LCOE_actual", "LCOE_Best","Movement"])
+        
+        time_i_results = time.time()
+        #print results best solution
+        print(sol_best.results.descriptive)
+        print(sol_best.results.df_results)
+        generation_graph = sol_best.results.generation_graph()
+        #plot(generation_graph)
+        try:
+            percent_df, energy_df, renew_df, total_df, brand_df = calculate_energy(sol_best.batteries_dict_sol, sol_best.generators_dict_sol, sol_best.results, demand_df)
+        except KeyError:
+            pass
+        time_f_results = time.time() - time_i_results
+        time_f_total = time.time() - time_i_total #final time
+        
+        
+        
+        
+        df_time_iter = pd.DataFrame(dict_time_iter.items(), columns = ['Iteration', 'Total iteration time']) 
+        time_iter_average = df_time_iter['Total iteration time'].mean()
+        df_time_solve = pd.DataFrame(dict_time_solve.items(), columns = ['Iteration', 'Solver time']) 
+        time_solve_average = df_time_solve['Solver time'].mean()
+        df_time_make = pd.DataFrame(dict_time_make.items(), columns = ['Iteration', 'make model time'])
+        time_make_average = df_time_make['make model time'].mean()
+        df_time_remove = pd.DataFrame(dict_time_remove.items(), columns = ['Iteration', 'Remove function time']) 
+        time_remove_average = df_time_remove['Remove function time'].mean()
+        df_time_add = pd.DataFrame(dict_time_add.items(), columns = ['Iteration', 'Add function time']) 
+        time_add_average = df_time_add['Add function time'].mean()
+        
+        
+        name_esc = 'esc_' + str(iii) + ' ' + str(lugar_run) + ' ' + str(iteraciones_run) + ' ' + str(add_name)
+        rows_df_time.append([iii,name_esc, lugar_run, iteraciones_run, amax, tlpsp_run, nse_run, 
+                            aux_instance_data['w_cost'],len(demand_df),demanda_run, forecast_w_run,forecast_s_run,
+                            gap_run, add_function_run, len(default_batteries), len(default_diesel),
+                            len(default_solar),len(default_wind), bypass_constraint_run,b_p_run, d_p_run, s_p_run,
+                            w_p_run, time_f_total, time_f_create_data,time_f_firstsol, time_f_iterations,
+                            time_iter_average, time_solve_average, time_make_average, time_remove_average,
+                            time_add_average, time_f_results])    
 
 
 
