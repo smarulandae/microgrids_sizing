@@ -24,7 +24,6 @@ class Sol_constructor():
                           batteries_dict, 
                           technologies_dict, 
                           renewables_dict,
-                          nse,
                           delta,
                           OPT_SOLVER,
                           MIP_GAP,
@@ -40,7 +39,7 @@ class Sol_constructor():
         
         #Calculate the maximum demand that the Diesel have to covered
         demand_to_be_covered = max(self.demand_df['demand']) 
-        demand_to_be_covered = demand_to_be_covered * (1 - nse)
+        demand_to_be_covered = demand_to_be_covered * (1 - instance_data['nse'])
         
         for g in self.generators_dict.values(): 
             if g.tec == 'D':
