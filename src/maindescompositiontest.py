@@ -114,7 +114,7 @@ for iii in range(1, 137):
         lugar_run = "Puerto Nariño"
     elif (iii  in instances_sa):
         lugar_run = "San Andrés"
- 
+    
     #instancias con iteraciones diferentes a 30
     instances_iterations_40 = [5,6,7,8,9,10,11,12,13,14,15,16,17,41,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102]
     instances_iterations_50 = [1,2,3,4,42]
@@ -139,7 +139,8 @@ for iii in range(1, 137):
         iteraciones_run = 90        
     elif (iii == 47):
         iteraciones_run = 100        
-
+    
+    
     #instancias con restricciones omitidas
     if (iii == 92):
         list_bypass_constraint_run = ['None']
@@ -476,8 +477,8 @@ for iii in range(1, 137):
     
     #crear dataframe del tamaño colocado
     if (aumento_tiempo == "False"):
-        demand_df = copy.deepcopy(demand_df_fix.head(len_total_time * htime_run))
-        forecast_df = copy.deepcopy(forecast_df_fix.head(len_total_time * htime_run))
+        demand_df = copy.deepcopy(demand_df_fix.head(int(len_total_time * htime_run)))
+        forecast_df = copy.deepcopy(forecast_df_fix.head(int(len_total_time * htime_run)))
     else:
         aux_demand = copy.deepcopy(demand_df_fix)
         aux_forecast = copy.deepcopy(forecast_df_fix)

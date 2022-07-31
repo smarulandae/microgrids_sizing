@@ -354,8 +354,8 @@ for iii in range(1, 50):
     
     #crear dataframe del tamaño colocado
     if (aumento_tiempo == "False"):
-        demand_df = copy.deepcopy(demand_df_fix.head(len_total_time * htime_run))
-        forecast_df = copy.deepcopy(forecast_df_fix.head(len_total_time * htime_run))
+        demand_df = copy.deepcopy(demand_df_fix.head(int(len_total_time * htime_run)))
+        forecast_df = copy.deepcopy(forecast_df_fix.head(int(len_total_time * htime_run)))
     else:
         aux_demand = copy.deepcopy(demand_df_fix)
         aux_forecast = copy.deepcopy(forecast_df_fix)
