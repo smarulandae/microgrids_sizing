@@ -54,38 +54,57 @@ rows_df_time = []
 
 for iii in range(1, 137):
     #PARAMETROS DE LA CORRIDA - POR DEFECTO
+    #lugar
     lugar_run  = "Providencia"
+    #iteraciones
     iteraciones_run = 30
+    #area, por defecto 100%
     area_run = 1
+    #%probabilidad escoger cada tecnología, por defecto 25% cada una
     d_p_run = 0.25
     s_p_run = 0.25
     w_p_run = 0.25
     b_p_run = 0.25
+    #tlpsp, por defecto 1
     tlpsp_run = 1
+    #nse, por defecto 5%
     nse_run = 0.05
+    #%wcost, por defecto 100%
     w_cost_run = 1
+    #%sube o baja fuel cost, por defecto 100% es decir el mismo valor
     fuel_cost_run = 1
+    #%demanda, por defecto 100%
     demanda_run = 1
+    #%forectrast viento, por defecto 100%
     forecast_w_run = 1
+    #%forecast solar, por defecto 100%
     forecast_s_run = 1
+    #gap, por defecto 1%
     gap_run = 0.01
+    #lista de restricciones que se omitirán
     list_bypass_constraint_run = ['dieselsolar']
+    #método de añadir, grasp o random
     add_function_run = "Grasp"
+    #tamaño de los json, 1 = 100%, 50% se reduciría su tamaño a la mitad
     json_baterias_run = 1
     json_diesel_run = 1
     json_solar_run = 1
     json_wind_run = 1
     htime_run = 1 
+    #binario incentivo fiscal, 1 sí se usa, 0 no
     delta_run = 1
+    #variables auxiliares
     aumento_tiempo = "False"
     estado_json_d = "Igual"
     estado_json_s = "Igual"    
     estado_json_w = "Igual"
     estado_json_b = "Igual"
+    #string para poner el nombre al escenario
     add_name = ""
     
     
     #INSTANCIAS
+    #instancias que llevan lugares diferentes a providencia
     instances_l = [1,9,10,11,12,85,86,87,88,89,90,91]
     instances_pn = [3,53,54,55,56,57,63,64,65,66,67,73,74,75,76,77]
     instances_sa = [4,5,6,7,8,104,106]
@@ -96,6 +115,7 @@ for iii in range(1, 137):
     elif (iii  in instances_sa):
         lugar_run = "San Andrés"
  
+    #instancias con iteraciones diferentes a 30
     instances_iterations_40 = [5,6,7,8,9,10,11,12,13,14,15,16,17,41,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102]
     instances_iterations_50 = [1,2,3,4,42]
     
@@ -120,7 +140,7 @@ for iii in range(1, 137):
     elif (iii == 47):
         iteraciones_run = 100        
 
-
+    #instancias con restricciones omitidas
     if (iii == 92):
         list_bypass_constraint_run = ['None']
         add_name = 'AllConstraints'
@@ -149,10 +169,10 @@ for iii in range(1, 137):
         
         
         
-        
+    #string para exportar los datos de las restricciones omitidas
     bypass_constraint_run = ', '.join([str(item) for item in list_bypass_constraint_run])
 
-
+    #instancias con diferente probabilidad de añadir una tecnología
     if(iii == 5 or iii == 9):
         b_p_run == 0.5
         add_name = '50%bat'
@@ -166,8 +186,8 @@ for iii in range(1, 137):
         s_p_run == 0.5
         add_name = '50%solar'
 
-        
-    if (iii == 13):
+    #instancias tlpsp
+    if (iii == 13 or iii == 100 or iii == 101):
         tlpsp_run = 2
         add_name = '2tlpsp'
     elif (iii == 14):
@@ -183,6 +203,7 @@ for iii in range(1, 137):
         tlpsp_run = 100
         add_name = '100tlpsp'
     
+    #instancias área
     if (iii == 18):
         area_run = 0.8
         add_name = '80%area'
@@ -199,6 +220,7 @@ for iii in range(1, 137):
         area_run = 1.3
         add_name = '130%area'
     
+    #instancias wcost
     if (iii == 33):
         w_cost_run = 0.5
         add_name = '50%wcost'
@@ -212,6 +234,7 @@ for iii in range(1, 137):
         w_cost_run = 1.5
         add_name = '150%wcost'
     
+    #istancias demanda
     if (iii == 48 or iii == 53):
         demand_run = 0.5
         add_name = '50%demand'
@@ -228,6 +251,8 @@ for iii in range(1, 137):
         demand_run = 1.5
         add_name = '150%demand'
 
+
+    #instancias forecast wt
     if (iii == 58 or iii == 63):
         forecast_w_run = 0.5
         add_name = '50%wt'
@@ -241,6 +266,7 @@ for iii in range(1, 137):
         forecast_w_run = 1.5
         add_name = '150%wt'
         
+    #instancias forecast solar
     if (iii == 68 or iii == 73):
         forecast_s_run = 0.5
         add_name = '50%DNI'
@@ -254,6 +280,8 @@ for iii in range(1, 137):
         forecast_s_run = 1.5
         add_name = '150%DNI'
 
+
+    #instancias gap
     if (iii == 78 or iii == 85):
         gap_run == 0.001
         add_name = '0.1%GAP'
@@ -276,10 +304,12 @@ for iii in range(1, 137):
         gap_run == 0
         add_name = '0%GAP'
 
+    #instancias add o grasp
     if (iii == 105 or iii == 106):
         add_function_run = "random"
         add_name = 'Random'
         
+    #instancias cambios en el tamaño del json
     if (iii == 107):
         add_name = '50%json'
         json_baterias_run = 0.5
@@ -385,7 +415,7 @@ for iii in range(1, 137):
         json_wind_run = 0.5
         estado_json_w = "Baja"  
 
-        
+    #instancias cambio tamaño horizonte temporal
     if (iii == 132):
         aumento_tiempo = "True"
         add_name = '150%htime'
@@ -402,7 +432,7 @@ for iii in range(1, 137):
         add_name = '50%htime'
         
     
-        
+    #cargar datos    
     if (lugar_run == "San Andrés"):
         demand_filepath = demand_filepath_sa
         forecast_filepath = forecast_filepath_sa
@@ -444,13 +474,14 @@ for iii in range(1, 137):
     
     len_total_time = len(demand_df_fix)
     
+    #crear dataframe del tamaño colocado
     if (aumento_tiempo == "False"):
         demand_df = copy.deepcopy(demand_df_fix.head(len_total_time * htime_run))
         forecast_df = copy.deepcopy(forecast_df_fix.head(len_total_time * htime_run))
     else:
         aux_demand = copy.deepcopy(demand_df_fix)
         aux_forecast = copy.deepcopy(forecast_df_fix)
-        
+        #si aumenta el tamaño se coloca aleatoriamente datos hasta completar el valor faltante
         mean_demand = aux_demand['demand'].mean()
         desvest_demand = aux_demand['demand'].std()
         mean_wt = aux_forecast['Wt'].mean()
@@ -459,6 +490,7 @@ for iii in range(1, 137):
         desvest_dni = aux_forecast['DNI'].std()        
         count = len(aux_demand)
         
+        #empezar a llenar los datos de forecast y demanda
         for i in range(int(len_total_time * (htime_run - 1))):
             insert_demand = np.random.normal(loc=mean_demand, scale=desvest_demand, size=1)
             insert_wt = np.random.normal(loc=mean_wt, scale=desvest_wt, size=1)
@@ -476,7 +508,7 @@ for iii in range(1, 137):
         forecast_df = copy.deepcopy (aux_forecast)
         
         
-        
+    #multiplicar por si hay reducción o aumento
     parameter_demand = demanda_run * instance_data['demand_covered']
     demand_df['demand'] = parameter_demand  * demand_df['demand'] 
     forecast_df['Wt'] = forecast_w_run * forecast_df['Wt'] 
@@ -487,7 +519,7 @@ for iii in range(1, 137):
     default_diesel = []
     default_solar = []
     default_wind = []
-    
+    #saber la tecnología de cada generador
     for i in generators_total:
         if (i['tec'] == 'D'):
             default_diesel.append(i)
@@ -496,11 +528,13 @@ for iii in range(1, 137):
         elif (i['tec'] == 'W'):
             default_wind.append(i)
     
+    #crear los datos según el tamaño establecido
     if (estado_json_d == "Baja"):
         default_diesel = random.sample(default_diesel, int(len(default_diesel) * json_diesel_run))
     elif (estado_json_d == "Sube"):
         aux_default_diesel = copy.deepcopy(default_diesel)
         count_d = 1
+        #si aumenta llenar con datos que ya tiene, escoger uno aleatorio y unir al df
         for i in range(int(len(default_diesel)*(json_diesel_run - 1))):
             random_diesel = []
             random_diesel = random.choice(aux_default_diesel)
@@ -559,6 +593,7 @@ for iii in range(1, 137):
     batteries = default_batteries
     nse_run = instance_data['nse']
     
+    #instancias nse diferente a por defecto
     if (iii == 23):
         nse_run = 0.001
         add_name = '0.1%nse'
@@ -636,6 +671,7 @@ for iii in range(1, 137):
                                 demand_df,
                                 forecast_df)
     
+    #auxiliar diccionario para evitar borrar datos
     aux_instance_data = copy.deepcopy(instance_data)
     aux_instance_data['amax'] = aux_instance_data['amax'] * area_run
     aux_instance_data['tlpsp'] = tlpsp_run
@@ -686,7 +722,7 @@ for iii in range(1, 137):
     dict_time_make = {}
     dict_time_solve = {}
     time_i_iterations = time.time()
-    
+    #si no es factible la solución inicial no hacer nada
     if (sol_feasible.results != None):
         for i in range(int(iteraciones_run)):
                 
@@ -710,6 +746,7 @@ for iii in range(1, 137):
                 if (list_available_gen != [] or list_available_bat != []):
                     # Add a generator or battery to the current solution
                     time_i_add = time.time()
+                    #aumentar la probabilidad de list si se establece, colocando más peso
                     if (b_p_run == 0.5 and list_available_bat != []):
                         list_tec_gen = list_tec_gen + ['B','B']
                     if((w_p_run == 0.5) and (list_available_gen != []) and ('W' in  list_tec_gen)):
@@ -719,6 +756,7 @@ for iii in range(1, 137):
                     if((d_p_run == 0.5) and (list_available_gen != []) and ('D' in  list_tec_gen)):
                        list_tec_gen = list_tec_gen + ['D','D']                    
                         
+                    #escoger cuál función usar
                     if (add_function_run == "random"):
                         sol_try = search_operator.addrandomobject(sol_current, list_available_bat, list_available_gen, list_tec_gen)
                     else:
@@ -732,6 +770,7 @@ for iii in range(1, 137):
                     sol_current = copy.deepcopy(sol_feasible)
                     continue # Skip running the model and go to the begining of the for loop
             
+            #si no hay nada poner uno aleatorio para evitar errores
             if (sol_try.generators_dict_sol == {} and sol_try.batteries_dict_sol == {}):
                 select_ob = random.choice(list(generators_dict.keys()))
                 sol_try.generators_dict_sol[select_ob] = generators_dict[select_ob]
@@ -803,7 +842,7 @@ for iii in range(1, 137):
         
         
         
-        
+        #calcular promedios de las iteraciones
         df_time_iter = pd.DataFrame(dict_time_iter.items(), columns = ['Iteration', 'Total iteration time']) 
         time_iter_average = df_time_iter['Total iteration time'].mean()
         df_time_solve = pd.DataFrame(dict_time_solve.items(), columns = ['Iteration', 'Solver time']) 
@@ -815,7 +854,7 @@ for iii in range(1, 137):
         df_time_add = pd.DataFrame(dict_time_add.items(), columns = ['Iteration', 'Add function time']) 
         time_add_average = df_time_add['Add function time'].mean()
         
-        
+        #crear fila del dataframe
         name_esc = 'esc_' + str(iii) + ' ' + str(lugar_run) + ' ' + str(iteraciones_run) + ' ' + str(add_name)
         rows_df_time.append([iii,name_esc, lugar_run, iteraciones_run, amax, tlpsp_run, nse_run, 
                             aux_instance_data['w_cost'],len(demand_df),demanda_run, forecast_w_run,forecast_s_run,
@@ -827,8 +866,9 @@ for iii in range(1, 137):
 
 
 
+#dataframe completo con todas las instancias
 df_time = pd.DataFrame(rows_df_time, columns=["N", "Name", "City", "Iterations", "Area","Tlpsp",
-                                              "NSE", "W_cost", "Len_demand","Forecast_wind", "Forecast_wind",
+                                              "NSE", "W_cost", "Len_demand","Demand percent", "Forecast_wind",
                                               "Forecast_solar","gap","add_function","json batteries", "json diesel",
                                               "json solar", "json wind","excluded constraints",
                                               "probability add batteries","probability add diesel",
@@ -837,7 +877,8 @@ df_time = pd.DataFrame(rows_df_time, columns=["N", "Name", "City", "Iterations",
                                               "ITERATIONS MEAN TIME","ITERATIONS MEAN SOLVER TIME",
                                               "ITERATIONS MEAN MAKE MODEL TIME","ITERATIONS REMOVE FUNCTION MEAN",
                                               "ITERATIONS ADD FUNCTION MEAN", "CREATE RESULTS TIME"])
-                            
+
+#crear Excel
 def multiple_dfs(df_list, sheets, file_name):
     writer = pd.ExcelWriter(file_name,engine='xlsxwriter')   
     row = 0
@@ -853,12 +894,6 @@ dfs = [df_time]
 multiple_dfs(dfs, 'ExecTime', 'Total_instances.xlsx')
 
 
-
-
-
-
-    
-    
     
 '''
 def init_rng(seed):
