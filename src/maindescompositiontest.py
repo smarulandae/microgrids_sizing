@@ -169,8 +169,6 @@ for iii in range(1, 137):
     elif (iii == 102):
         list_bypass_constraint_run = ['lpspcons']
         add_name = 'NOTlpsp'
-
-        
         
         
     #string para exportar los datos de las restricciones omitidas
@@ -178,16 +176,16 @@ for iii in range(1, 137):
 
     #instancias con diferente probabilidad de añadir una tecnología
     if(iii == 5 or iii == 9):
-        b_p_run == 0.5
+        b_p_run = 0.5
         add_name = '50%bat'
     elif(iii == 6 or iii == 10):
-        d_p_run == 0.5
+        d_p_run = 0.5
         add_name = '50%diesel'
     elif(iii == 7 or iii == 11):
-        w_p_run == 0.5
+        w_p_run = 0.5
         add_name = '50%wind'
     elif(iii == 8 or iii == 12):
-        s_p_run == 0.5
+        s_p_run = 0.5
         add_name = '50%solar'
 
     #instancias tlpsp
@@ -240,19 +238,19 @@ for iii in range(1, 137):
     
     #istancias demanda
     if (iii == 48 or iii == 53):
-        demand_run = 0.5
+        demanda_run = 0.5
         add_name = '50%demand'
     elif (iii == 49 or iii == 54):
-        demand_run = 0.9  
+        demanda_run = 0.9  
         add_name = '90%demand'
     elif (iii == 51 or iii == 56):
-        demand_run = 1.1 
+        demanda_run = 1.1 
         add_name = '110%demand'
     elif (iii == 52):
-        demand_run = 1.3
+        demanda_run = 1.3
         add_name = '130%demand'
     elif (iii == 57):
-        demand_run = 1.5
+        demanda_run = 1.5
         add_name = '150%demand'
 
 
@@ -287,25 +285,25 @@ for iii in range(1, 137):
 
     #instancias gap
     if (iii == 78 or iii == 85):
-        gap_run == 0.001
+        gap_run = 0.001
         add_name = '0.1%GAP'
     elif (iii == 79 or iii == 86):
-        gap_run == 0.005
+        gap_run = 0.005
         add_name = '0.5%GAP'
     elif (iii == 80 or iii == 87):
-        gap_run == 0.02
+        gap_run = 0.02
         add_name = '2%GAP'
     elif (iii == 81 or iii == 88):
-        gap_run == 0.03
+        gap_run = 0.03
         add_name = '3%GAP'
     elif (iii == 82 or iii == 89):
-        gap_run == 0.05
+        gap_run = 0.05
         add_name = '5%GAP'
     elif (iii == 83 or iii == 90):
-        gap_run == 0.1
+        gap_run = 0.1
         add_name = '10%GAP'
     elif (iii == 84 or iii == 91):
-        gap_run == 0
+        gap_run = 0
         add_name = '0%GAP'
 
     #instancias add o grasp
@@ -503,9 +501,8 @@ for iii in range(1, 137):
             numero_wt = int(insert_wt[0])
             numero_dni = int(insert_dni[0])
             
-            aux_demand.append({'t':count,'demand': numero_demand}, ignore_index = True)
-            aux_forecast.append({'t':count, 'DNI':numero_dni, 't_ambt':0, 'Wt': numero_wt, 'Qt':0},ignore_index = True)
-            
+            aux_demand.loc[len(aux_demand.index)] = [count,numero_demand]
+            aux_forecast.loc[len(aux_forecast.index)] = [count,numero_dni,0,numero_wt,0]
             count = count + 1
             
         demand_df = copy.deepcopy (aux_demand)
@@ -859,15 +856,19 @@ for iii in range(1, 137):
         df_time_add = pd.DataFrame(dict_time_add.items(), columns = ['Iteration', 'Add function time']) 
         time_add_average = df_time_add['Add function time'].mean()
         
+        lcoe_export = sol_best.results.descriptive['LCOE']
+        len_gen = len(sol_best.generators_dict_sol)
+        len_bat = len(sol_best.batteries_dict_sol)
+        
         #crear fila del dataframe
-        name_esc = 'esc_' + str(iii) + ' ' + str(lugar_run) + ' ' + str(iteraciones_run) + ' ' + str(add_name)
+        name_esc = 'esc_' + str(iii) + ' ' + str(lugar_run) + ' iter: ' + str(iteraciones_run) + ' ' + str(add_name)
         rows_df_time.append([iii,name_esc, lugar_run, iteraciones_run, amax, tlpsp_run, nse_run, 
                             aux_instance_data['w_cost'],len(demand_df),demanda_run, forecast_w_run,forecast_s_run,
                             gap_run, add_function_run, len(default_batteries), len(default_diesel),
                             len(default_solar),len(default_wind), bypass_constraint_run,b_p_run, d_p_run, s_p_run,
                             w_p_run, time_f_total, time_f_create_data,time_f_firstsol, time_f_iterations,
                             time_iter_average, time_solve_average, time_make_average, time_remove_average,
-                            time_add_average, time_f_results])    
+                            time_add_average, time_f_results, lcoe_export, len_gen, len_bat])    
 
 
 
@@ -881,7 +882,8 @@ df_time = pd.DataFrame(rows_df_time, columns=["N", "Name", "City", "Iterations",
                                               "CREATE DATA TIME", "FIRST SOLUTION TIME","ITERATIONS TIME",
                                               "ITERATIONS MEAN TIME","ITERATIONS MEAN SOLVER TIME",
                                               "ITERATIONS MEAN MAKE MODEL TIME","ITERATIONS REMOVE FUNCTION MEAN",
-                                              "ITERATIONS ADD FUNCTION MEAN", "CREATE RESULTS TIME"])
+                                              "ITERATIONS ADD FUNCTION MEAN", "CREATE RESULTS TIME",
+                                              "LCOE","LEN GENERATORS", "LEN BATTERIES"])
 
 #crear Excel
 def multiple_dfs(df_list, sheets, file_name):

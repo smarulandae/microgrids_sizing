@@ -195,19 +195,19 @@ for iii in range(1, 50):
     
     #istancias demanda sube o baja
     if (iii == 48 or iii == 50):
-        demand_run = 0.5
+        demanda_run = 0.5
         add_name = '50%demand'
     elif (iii == 40 or iii == 5):
-        demand_run = 0.9  
+        demanda_run = 0.9  
         add_name = '90%demand'
     elif (iii == 1 or iii == 6):
-        demand_run = 1.1 
+        demanda_run = 1.1 
         add_name = '110%demand'
     elif (iii == 2):
-        demand_run = 1.3
+        demanda_run = 1.3
         add_name = '130%demand'
     elif (iii == 49):
-        demand_run = 1.5
+        demanda_run = 1.5
         add_name = '150%demand'
     
     #instancias forecast wt
@@ -239,25 +239,25 @@ for iii in range(1, 50):
 
     #instancias gap
     if (iii == 10):
-        gap_run == 0.001
+        gap_run = 0.001
         add_name = '0.1%GAP'
     elif (iii == 11):
-        gap_run == 0.005
+        gap_run = 0.005
         add_name = '0.5%GAP'
     elif (iii == 12):
-        gap_run == 0.02
+        gap_run = 0.02
         add_name = '2%GAP'
     elif (iii == 13):
-        gap_run == 0.03
+        gap_run = 0.03
         add_name = '3%GAP'
     elif (iii == 14):
-        gap_run == 0.05
+        gap_run = 0.05
         add_name = '5%GAP'
     elif (iii == 15):
-        gap_run == 0.1
+        gap_run = 0.1
         add_name = '10%GAP'
     elif (iii == 16):
-        gap_run == 0
+        gap_run = 0
         add_name = '0%GAP'
         
     #instancias cambios en el tamaño del json
@@ -381,9 +381,8 @@ for iii in range(1, 50):
             numero_wt = int(insert_wt[0])
             numero_dni = int(insert_dni[0])
             
-            aux_demand.append({'t':count,'demand': numero_demand}, ignore_index = True)
-            aux_forecast.append({'t':count, 'DNI':numero_dni, 't_ambt':0, 'Wt': numero_wt, 'Qt':0},ignore_index = True)
-            
+            aux_demand.loc[len(aux_demand.index)] = [count,numero_demand]
+            aux_forecast.loc[len(aux_forecast.index)] = [count,numero_dni,0,numero_wt,0]
             count = count + 1
             
         demand_df = copy.deepcopy (aux_demand)
