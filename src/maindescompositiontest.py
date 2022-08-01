@@ -11,9 +11,8 @@ import pandas as pd
 from operators_test import Sol_constructor, Search_operator
 from plotly.offline import plot
 import copy
+from classes import Random_create
 import time
-import numpy as np
-import random
 pd.options.display.max_columns = None
 
 # file paths github
@@ -55,6 +54,10 @@ rows_df_time = []
 for iii in range(1, 137):
     #PARAMETROS DE LA CORRIDA - POR DEFECTO
     #lugar
+    #set the same seed for every iteration
+    #seed = None
+    seed = 42
+    rand_ob = Random_create(seed = seed)
     lugar_run  = "Providencia"
     #iteraciones
     iteraciones_run = 30
@@ -493,9 +496,9 @@ for iii in range(1, 137):
         
         #empezar a llenar los datos de forecast y demanda
         for i in range(int(len_total_time * (htime_run - 1))):
-            insert_demand = np.random.normal(loc=mean_demand, scale=desvest_demand, size=1)
-            insert_wt = np.random.normal(loc=mean_wt, scale=desvest_wt, size=1)
-            insert_dni = np.random.normal(loc=mean_dni, scale=desvest_dni, size=1)
+            insert_demand = rand_ob.create_randomnpnormal(mean_demand, desvest_demand, 1)
+            insert_wt = rand_ob.create_randomnpnormal(mean_wt, desvest_wt, 1)
+            insert_dni = rand_ob.create_randomnpnormal(mean_dni, desvest_dni, 1)
             numero_demand = int(insert_demand[0])
             numero_wt = int(insert_wt[0])
             numero_dni = int(insert_dni[0])
@@ -531,14 +534,14 @@ for iii in range(1, 137):
     
     #crear los datos según el tamaño establecido
     if (estado_json_d == "Baja"):
-        default_diesel = random.sample(default_diesel, int(len(default_diesel) * json_diesel_run))
+        default_diesel = rand_ob.create_randomsample(default_diesel, int(len(default_diesel) * json_diesel_run))
     elif (estado_json_d == "Sube"):
         aux_default_diesel = copy.deepcopy(default_diesel)
         count_d = 1
         #si aumenta llenar con datos que ya tiene, escoger uno aleatorio y unir al df
         for i in range(int(len(default_diesel)*(json_diesel_run - 1))):
             random_diesel = []
-            random_diesel = random.choice(aux_default_diesel)
+            random_diesel = rand_ob.create_rand_list(aux_default_diesel)
             random_diesel['id_gen'] = 'Diesel_new' + str(count_d)
             aux_default_diesel.append(random_diesel)
             count_d = count_d + 1
@@ -547,13 +550,13 @@ for iii in range(1, 137):
             
 
     if (estado_json_s == "Baja"):
-        default_solar = random.sample(default_solar, int(len(default_solar) * json_solar_run))
+        default_solar = rand_ob.create_randomsample(default_solar, int(len(default_solar) * json_solar_run))
     elif (estado_json_s == "Sube"):
         aux_default_solar = copy.deepcopy(default_solar)
         count_s = 1
         for i in range(int(len(default_solar)*(json_solar_run - 1))):
             random_solar = []
-            random_solar = random.choice(aux_default_solar)
+            random_solar = rand_ob.create_rand_list(aux_default_solar)
             random_solar['id_gen'] = 'Solar_new' + str(count_s)
             aux_default_solar.append(random_solar)
             count_s = count_s + 1
@@ -561,13 +564,13 @@ for iii in range(1, 137):
         default_solar = copy.deepcopy(aux_default_solar)            
             
     if (estado_json_w == "Baja"):
-        default_wind = random.sample(default_wind, int(len(default_wind) * json_wind_run))
+        default_wind = rand_ob.create_randomsample(default_wind, int(len(default_wind) * json_wind_run))
     elif (estado_json_w == "Sube"):
         aux_default_wind = copy.deepcopy(default_wind)
         count_w = 1
         for i in range(int(len(default_wind)*(json_wind_run - 1))):
             random_wind = []
-            random_wind = random.choice(aux_default_wind)
+            random_wind = rand_ob.create_rand_list(aux_default_wind)
             random_wind['id_gen'] = 'Wind_new' + str(count_w)
             aux_default_wind.append(random_wind)
             count_w = count_w + 1
@@ -575,16 +578,18 @@ for iii in range(1, 137):
         default_wind = copy.deepcopy(aux_default_wind)  
 
     if (estado_json_b == "Baja"):
-        default_batteries = random.sample(default_batteries, int(len(default_batteries) * json_baterias_run))
+        default_batteries = rand_ob.create_randomsample(default_batteries, int(len(default_batteries) * json_baterias_run))
     elif (estado_json_b == "Sube"):
         aux_default_batteries = copy.deepcopy(default_batteries)
         count_b = 1
         for i in range(int(len(default_batteries)*(json_baterias_run - 1))):
             random_batteries = []
-            random_batteries = random.choice(aux_default_batteries)
+            random_batteries = rand_ob.create_rand_list(aux_default_batteries)
             random_batteries['id_bat'] = 'Batterie_new' + str(count_b)
             aux_default_batteries.append(random_batteries)
             count_b = count_b + 1
+            
+
             
         default_batteries = copy.deepcopy(aux_default_batteries)  
 
@@ -638,9 +643,7 @@ for iii in range(1, 137):
     MIP_GAP = gap_run
     TEE_SOLVER = True
     OPT_SOLVER = 'gurobi'
-    SEED_R = 42
-    np.random.seed(SEED_R)
-    
+   
     #Calculate fiscal incentives
     delta = fiscal_incentive(fisc_data['credit'], 
                              fisc_data['depreciation'],
@@ -691,7 +694,8 @@ for iii in range(1, 137):
                                                    OPT_SOLVER,
                                                    MIP_GAP,
                                                    TEE_SOLVER,
-                                                   list_bypass_constraint_run)
+                                                   list_bypass_constraint_run,
+                                                   rand_ob)
     
     
     time_f_firstsol = time.time() - time_i_firstsol #final time
@@ -759,9 +763,9 @@ for iii in range(1, 137):
                         
                     #escoger cuál función usar
                     if (add_function_run == "random"):
-                        sol_try = search_operator.addrandomobject(sol_current, list_available_bat, list_available_gen, list_tec_gen)
+                        sol_try = search_operator.addrandomobject(sol_current, list_available_bat, list_available_gen, list_tec_gen, rand_ob)
                     else:
-                        sol_try, dic_remove = search_operator.addobject(sol_current, list_available_bat, list_available_gen, list_tec_gen, dic_remove,  CRF, instance_data['fuel_cost'])
+                        sol_try, dic_remove = search_operator.addobject(sol_current, list_available_bat, list_available_gen, list_tec_gen, dic_remove,  CRF, instance_data['fuel_cost'],rand_ob)
         
                     movement = "Add"
                     time_f_add = time.time() - time_i_add #final time
@@ -773,7 +777,7 @@ for iii in range(1, 137):
             
             #si no hay nada poner uno aleatorio para evitar errores
             if (sol_try.generators_dict_sol == {} and sol_try.batteries_dict_sol == {}):
-                select_ob = random.choice(list(generators_dict.keys()))
+                select_ob = rand_ob.create_rand_list(list(generators_dict.keys()))
                 sol_try.generators_dict_sol[select_ob] = generators_dict[select_ob]
                 
             tnpccrf_calc = calculate_sizingcost(sol_try.generators_dict_sol, 
@@ -897,11 +901,6 @@ multiple_dfs(dfs, 'ExecTime', 'Total_instances.xlsx')
 
     
 '''
-def init_rng(seed):
-    global rng
-    rng = numpy.random.RandomState(seed=seed)
-
-
 
 TRM = 3910
 LCOE_COP = TRM * model_results.descriptive['LCOE']

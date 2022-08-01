@@ -11,10 +11,6 @@ import json
 import numpy as np
 import math
 import copy
-import random
-
-
-
 
 
 def read_data(demand_filepath, 

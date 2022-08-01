@@ -7,10 +7,9 @@ Created on Wed Apr 20 11:14:21 2022
 
 from utilities import read_data, create_objects, create_technologies, calculate_energy, interest_rate
 from utilities import fiscal_incentive 
-import numpy as np
 import opttest as opt
 import copy
-import random
+from classes import Random_create
 import pandas as pd 
 from plotly.offline import plot
 pd.options.display.max_columns = None
@@ -51,7 +50,12 @@ fiscalData_filepath = "../data/fiscal_incentive.json"
 
 rows_df_time = []
 
+
 for iii in range(1, 50):
+    #set the same seed for every iteration
+    #seed = None
+    seed = 42
+    rand_ob = Random_create(seed = seed)
     #PARAMETROS DE LA CORRIDA - POR DEFECTO
     #lugar, por defecto providencia
     lugar_run  = "Providencia"
@@ -370,9 +374,9 @@ for iii in range(1, 50):
         
         #empezar a llenar los datos de forecast y demanda
         for i in range(int(len_total_time * (htime_run - 1))):
-            insert_demand = np.random.normal(loc=mean_demand, scale=desvest_demand, size=1)
-            insert_wt = np.random.normal(loc=mean_wt, scale=desvest_wt, size=1)
-            insert_dni = np.random.normal(loc=mean_dni, scale=desvest_dni, size=1)
+            insert_demand = rand_ob.create_randomnpnormal(mean_demand, desvest_demand, 1)
+            insert_wt = rand_ob.create_randomnpnormal(mean_wt, desvest_wt, 1)
+            insert_dni = rand_ob.create_randomnpnormal(mean_dni, desvest_dni, 1)
             numero_demand = int(insert_demand[0])
             numero_wt = int(insert_wt[0])
             numero_dni = int(insert_dni[0])
@@ -399,7 +403,7 @@ for iii in range(1, 50):
     default_wind = []
     
     #definir la misma semilla para que los random siempre den lo mismo
-    random.seed(42)
+    
     #saber la tecnología de cada generador
     for i in generators_total:
         if (i['tec'] == 'D'):
@@ -411,14 +415,14 @@ for iii in range(1, 50):
     
     #crear los datos según el tamaño establecido
     if (estado_json_d == "Baja"):
-        default_diesel = random.sample(default_diesel, int(len(default_diesel) * json_diesel_run))
+        default_diesel = rand_ob.create_randomsample(default_diesel, int(len(default_diesel) * json_diesel_run))
     elif (estado_json_d == "Sube"):
         aux_default_diesel = copy.deepcopy(default_diesel)
         count_d = 1
         #si aumenta llenar con datos que ya tiene, escoger uno aleatorio y unir al df
         for i in range(int(len(default_diesel)*(json_diesel_run - 1))):
             random_diesel = []
-            random_diesel = random.choice(aux_default_diesel)
+            random_diesel = rand_ob.create_rand_list(aux_default_diesel)
             random_diesel['id_gen'] = 'Diesel_new' + str(count_d)
             aux_default_diesel.append(random_diesel)
             count_d = count_d + 1
@@ -427,13 +431,13 @@ for iii in range(1, 50):
             
 
     if (estado_json_s == "Baja"):
-        default_solar = random.sample(default_solar, int(len(default_solar) * json_solar_run))
+        default_solar = rand_ob.create_randomsample(default_solar, int(len(default_solar) * json_solar_run))
     elif (estado_json_s == "Sube"):
         aux_default_solar = copy.deepcopy(default_solar)
         count_s = 1
         for i in range(int(len(default_solar)*(json_solar_run - 1))):
             random_solar = []
-            random_solar = random.choice(aux_default_solar)
+            random_solar = rand_ob.create_rand_list(aux_default_solar)
             random_solar['id_gen'] = 'Solar_new' + str(count_s)
             aux_default_solar.append(random_solar)
             count_s = count_s + 1
@@ -441,13 +445,13 @@ for iii in range(1, 50):
         default_solar = copy.deepcopy(aux_default_solar)            
             
     if (estado_json_w == "Baja"):
-        default_wind = random.sample(default_wind, int(len(default_wind) * json_wind_run))
+        default_wind = rand_ob.create_randomsample(default_wind, int(len(default_wind) * json_wind_run))
     elif (estado_json_w == "Sube"):
         aux_default_wind = copy.deepcopy(default_wind)
         count_w = 1
         for i in range(int(len(default_wind)*(json_wind_run - 1))):
             random_wind = []
-            random_wind = random.choice(aux_default_wind)
+            random_wind = rand_ob.create_rand_list(aux_default_wind)
             random_wind['id_gen'] = 'Wind_new' + str(count_w)
             aux_default_wind.append(random_wind)
             count_w = count_w + 1
@@ -455,13 +459,13 @@ for iii in range(1, 50):
         default_wind = copy.deepcopy(aux_default_wind)  
 
     if (estado_json_b == "Baja"):
-        default_batteries = random.sample(default_batteries, int(len(default_batteries) * json_baterias_run))
+        default_batteries = rand_ob.create_randomsample(default_batteries, int(len(default_batteries) * json_baterias_run))
     elif (estado_json_b == "Sube"):
         aux_default_batteries = copy.deepcopy(default_batteries)
         count_b = 1
         for i in range(int(len(default_batteries)*(json_baterias_run - 1))):
             random_batteries = []
-            random_batteries = random.choice(aux_default_batteries)
+            random_batteries = rand_ob.create_rand_list(aux_default_batteries)
             random_batteries['id_bat'] = 'Batterie_new' + str(count_b)
             aux_default_batteries.append(random_batteries)
             count_b = count_b + 1
