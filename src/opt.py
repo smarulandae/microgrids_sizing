@@ -290,7 +290,7 @@ def make_model(generators_dict=None,
     
     # Defines objective function
     def obj2_rule(model):
-      return ((model.TNPC * model.CRF + model.TNPC_OP) / sum( model.d[t] for t in model.HTIME)) +  model.w_cost * sum( model.s_plus[t] for t in model.HTIME) 
+      return ((model.TNPC * model.CRF + model.TNPC_OP) / sum( model.d[t] for t in model.HTIME)) +  model.w_cost * sum( model.s_plus[t] for t in model.HTIME)
     model.LCOE_value = pyo.Objective(sense = pyo.minimize, rule=obj2_rule)
     
     return model
